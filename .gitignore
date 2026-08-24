@@ -1,0 +1,42 @@
+# ===================== ACESSOS =====================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+credentials.json
+secrets.json
+
+# ===================== n8n ==========================
+.n8n/
+n8n/data/
+n8n/*.local.json
+n8n/workflows/*.local.json
+
+# ===================== Node =========================
+node_modules/
+npm-debug.log*
+yarn-error.log
+.npm/
+
+# ===================== Python ==========
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ===================== Editor / SO ==================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===================== Temporários ==================
+*.log
+tmp/
+dist/
+build/
