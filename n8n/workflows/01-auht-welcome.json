@@ -1,0 +1,249 @@
+{
+  "name": "auht-welcome",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "44925c3b-024c-4a32-837e-bb93aa74d2c4",
+      "name": "Telegram Trigger",
+      "webhookId": "fe5f1f1a-8574-46fd-ab4c-b43fa6a36210",
+      "credentials": {
+        "telegramApi": {
+          "id": "s4WJy61dJIVc7rxA",
+          "name": "Telegram - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select id, first_name, is_active\nfrom public.users\nwhere telegram_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.telegram_id ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        384,
+        16
+      ],
+      "id": "c4f0d2d8-38f0-45d4-9038-398b223aa2da",
+      "name": "Buscar Usuário",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6ffad313-9c63-42bb-b739-1bffb007a87c",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        16
+      ],
+      "id": "e1f8e2c0-3bf8-471c-9d79-b2db4febc6d5",
+      "name": "Usuário Existe"
+    },
+    {
+      "parameters": {
+        "chatId": "{{ $('Normalizar Entrada').first().json.chat_id }}",
+        "text": "Bem-vinda de volta, {{ $('Normalizar Entrada').item.json.first_name }}!  Sua conta já está ativa e suas tarefas estão salvas. Em breve você poderá usar /add, /listar e /concluir",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        -80
+      ],
+      "id": "8840960d-c724-4f47-9c80-9dfe8f0dbf06",
+      "name": "Boas-vindas de Volta",
+      "webhookId": "5ce25866-ef0e-4088-95cf-c79e94864252",
+      "credentials": {
+        "telegramApi": {
+          "id": "s4WJy61dJIVc7rxA",
+          "name": "Telegram - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with chave as (\n  select upper(encode(extensions.gen_random_bytes(6), 'hex')) as valor\n),\nnovo_usuario as (\n  insert into public.users (telegram_id, first_name, username, access_key_hash)\n  select $1::bigint, $2::text, $3::text,\n         extensions.crypt(chave.valor, extensions.gen_salt('bf', 10))\n  from chave\n  on conflict (telegram_id) do nothing\n  returning id, first_name, created_at\n)\nselect novo_usuario.id,\n       novo_usuario.first_name,\n       chave.valor as access_key\nfrom novo_usuario, chave;",
+        "options": {
+          "queryReplacement": "{{ [ $('Normalizar Entrada').item.json.telegram_id, $('Normalizar Entrada').item.json.first_name, $('Normalizar Entrada').item.json.username ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        832,
+        112
+      ],
+      "id": "27176f5c-92e2-4808-bf0b-1a3370d2e465",
+      "name": "Registrar Usuário",
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizar Entrada').first().json.chat_id }}",
+        "text": "=Cadastro concluído, {{ $('Normalizar Entrada').item.json.first_name }}!  Sua chave de acesso é: {{ $json.access_key }}  Guarde esta chave em local seguro. Ela é exibida apenas uma vez e não pode ser recuperada — armazenamos somente uma versão criptografada dela.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        128
+      ],
+      "id": "7da8bcb8-c34b-4b86-b855-b43f7fbc12f6",
+      "name": "Enviar Chave de Acesso",
+      "webhookId": "d8d706e4-9075-4050-b34a-abeed4995b4b",
+      "credentials": {
+        "telegramApi": {
+          "id": "s4WJy61dJIVc7rxA",
+          "name": "Telegram - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const update = $input.first().json;\nconst msg = update.message ?? update.edited_message;\n\nif (!msg?.from || !msg?.chat) {\n  return [];\n}\n\n// Escapa os 3 caracteres que o parse_mode HTML do Telegram interpreta\nconst escapeHtml = (valor) =>\n  String(valor ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n\nconst texto = (msg.text ?? '').trim();\nconst firstName = (msg.from.first_name ?? 'Usuário').trim().slice(0, 80);\n\nreturn [{\n  json: {\n    telegram_id: msg.from.id,\n    chat_id: msg.chat.id,\n    first_name: firstName,            // valor cru → vai para o banco\n    first_name_safe: escapeHtml(firstName), // valor escapado → vai para a tela\n    username: msg.from.username ?? null,\n    texto,\n    comando: texto.split(/\\s+/)[0].toLowerCase(),\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ebf94eb9-a72d-4752-bd8a-d1f95313feb9",
+      "name": "Normalizar Entrada"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Usuário": {
+      "main": [
+        [
+          {
+            "node": "Usuário Existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Usuário Existe": {
+      "main": [
+        [
+          {
+            "node": "Boas-vindas de Volta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Usuário": {
+      "main": [
+        [
+          {
+            "node": "Enviar Chave de Acesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Entrada": {
+      "main": [
+        [
+          {
+            "node": "Buscar Usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9aa6b0f6-0404-44a6-93b8-9b1553397577",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e039f1f873b7672c729181f0a25795dcab5bb58a75adc526d690b356e9566c0c"
+  },
+  "nodeGroups": [],
+  "id": "ZADW1Uynpy2R1jGg",
+  "tags": []
+}
