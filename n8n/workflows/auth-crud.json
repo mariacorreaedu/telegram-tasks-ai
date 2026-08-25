@@ -35,7 +35,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        384,
+        400,
         16
       ],
       "id": "c4f0d2d8-38f0-45d4-9038-398b223aa2da",
@@ -76,7 +76,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        608,
+        624,
         16
       ],
       "id": "e1f8e2c0-3bf8-471c-9d79-b2db4febc6d5",
@@ -93,7 +93,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        832,
+        848,
         112
       ],
       "id": "27176f5c-92e2-4808-bf0b-1a3370d2e465",
@@ -108,7 +108,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Normalizar Entrada').first().json.chat_id }}",
-        "text": "=Cadastro concluído, {{ $('Normalizar Entrada').item.json.first_name }}!  Sua chave de acesso é: {{ $json.access_key }}  Guarde esta chave em local seguro. Ela é exibida apenas uma vez e não pode ser recuperada — armazenamos somente uma versão criptografada dela.",
+        "text": "=✅ <b>Cadastro concluído, {{ $('Normalizar Entrada').first().json.first_name_safe }}!</b>\n\nSua chave de acesso é:\n<code>{{ $json.access_key }}</code>\n\n👆 Toque na chave para copiar. Ela é exibida <b>uma única vez</b> e não pode ser recuperada — no banco fica apenas uma versão criptografada.\n\n━━━━━━━━━━━━━━━\n\n🤖 <b>Comandos disponíveis</b>\n\n<code>/add Comprar café</code> — cria uma tarefa\n<code>/listar</code> — mostra suas tarefas em aberto\n<code>/concluir 3</code> — conclui a tarefa #3\n<code>/remover 3</code> — apaga a tarefa #3\n<code>/ajuda</code> — mostra esta mensagem\n\n<i>Os comandos /concluir e /remover aceitam vários números:</i>\n<code>/concluir 2 3 4</code>",
         "additionalFields": {
           "appendAttribution": false,
           "parse_mode": "HTML"
@@ -117,7 +117,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1024,
+        1040,
         192
       ],
       "id": "7da8bcb8-c34b-4b86-b855-b43f7fbc12f6",
@@ -137,7 +137,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        224,
+        240,
         0
       ],
       "id": "ebf94eb9-a72d-4752-bd8a-d1f95313feb9",
@@ -255,7 +255,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        800,
+        816,
         -208
       ],
       "id": "aa05d56d-c630-4e42-87fb-60851f340e5e",
@@ -272,7 +272,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        1072,
+        1088,
         -336
       ],
       "id": "f5c91b98-b495-4e9d-b408-236970feb2f2",
@@ -296,7 +296,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        1072,
+        1088,
         -496
       ],
       "id": "86d0c624-480b-4833-95a5-c202970ccad1",
@@ -320,7 +320,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        1056,
+        1072,
         -640
       ],
       "id": "1e352d12-26bc-48fc-96b8-cf43cd478044",
@@ -344,7 +344,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        1488,
+        1504,
         -608
       ],
       "id": "77e9c898-2c45-4842-a8cf-89777ff739fb",
@@ -359,12 +359,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// ===================================================================\n// Montar Resposta — traduz o resultado do banco em mensagem de chat\n// ===================================================================\n\nconst entrada = $('Normalizar Entrada').first().json;\nconst comando = entrada.comando;\nconst argumento = (entrada.argumento ?? '').trim();\nconst numeros = entrada.numeros ?? [];\n\n// Só são tarefas de verdade as linhas que têm \"numero\".\n// (O nó Postgres emite { success: true } quando a query não retorna nada.)\nconst tarefas = $input\n  .all()\n  .map((item) => item.json)\n  .filter((linha) => linha?.numero != null)\n  .sort((a, b) => a.numero - b.numero);\n\nconst encontrou = tarefas.length > 0;\n\n// Quais dos números pedidos NÃO foram afetados?\nconst afetados = tarefas.map((t) => t.numero);\nconst naoEncontrados = numeros.filter((n) => !afetados.includes(n));\n\n// -------------------------------------------------------------------\n// Utilitários\n// -------------------------------------------------------------------\nconst esc = (v) =>\n  String(v ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n\nconst plural = (n, singular, pluralForma) => (n === 1 ? singular : pluralForma);\n\nconst ICONE_STATUS = { pendente: '⏳', em_andamento: '🔄' };\nconst ICONE_PRIO = { baixa: '🔵', media: '🟡', alta: '🟠', urgente: '🔴' };\n\nconst AJUDA = [\n  '<b>🤖 Comandos disponíveis</b>',\n  '',\n  '<code>/add Comprar café</code> — cria uma tarefa',\n  '<code>/listar</code> — mostra suas tarefas em aberto',\n  '<code>/concluir 3</code> — conclui a tarefa #3',\n  '<code>/remover 3</code> — apaga a tarefa #3',\n  '',\n  '<i>Os comandos /concluir e /remover aceitam vários números:</i>',\n  '<code>/concluir 2 3 4</code>',\n].join('\\n');\n\nconst DICA_NUMERO = (cmd) =>\n  `⚠️ Informe o número da tarefa.\\n\\n` +\n  `Exemplo: <code>${cmd} 3</code>\\n` +\n  `Vários de uma vez: <code>${cmd} 2 3 4</code>\\n` +\n  `Veja os números com <code>/listar</code>`;\n\n// Monta o relatório de uma operação em lote\nconst relatorioLote = ({ icone, singular, pluralForma, riscar = false }) => {\n  const linhas = [];\n\n  if (tarefas.length > 0) {\n    linhas.push(\n      `${icone} <b>${tarefas.length} ${plural(tarefas.length, 'tarefa', 'tarefas')} ` +\n        `${plural(tarefas.length, singular, pluralForma)}</b>`,\n      '',\n      ...tarefas.map(\n        (t) => `  <b>#${t.numero}</b> ${riscar ? `<s>${esc(t.title)}</s>` : esc(t.title)}`,\n      ),\n    );\n  }\n\n  if (naoEncontrados.length > 0) {\n    if (linhas.length > 0) linhas.push('');\n    linhas.push(\n      `⚠️ Não encontrei: ${naoEncontrados.map((n) => `#${n}`).join(', ')}`,\n      `<i>Confira os números com /listar</i>`,\n    );\n  }\n\n  return linhas.join('\\n');\n};\n\n// -------------------------------------------------------------------\n// Resposta por comando\n// -------------------------------------------------------------------\nlet mensagem;\n\nswitch (comando) {\n   case '/add':\n    if (argumento === '') {\n      mensagem = '⚠️ Preciso do texto da tarefa.\\n\\nExemplo: <code>/add Comprar café</code>';\n    } else if (encontrou) {\n      const t = tarefas[0];\n      mensagem =\n        `✅ Tarefa <b>#${t.numero}</b> criada:\\n${esc(t.title)}\\n\\n` +\n        `${ICONE_PRIO[t.priority] ?? ''} Prioridade: <b>${t.priority}</b>\\n` +\n        `🏷 Categoria: <b>${esc(t.category ?? 'outros')}</b>`;\n    } else {\n      mensagem = '❌ Não consegui criar a tarefa. Tente novamente.';\n    }\n    break;\n\n  case '/listar':\n    mensagem = encontrou\n      ? '📋 <b>Suas tarefas em aberto</b>\\n\\n' +\n        tarefas\n          .map(\n            (t) =>\n              `${ICONE_STATUS[t.status] ?? '•'} <b>#${t.numero}</b> ${esc(t.title)}\\n` +\n              `      ${ICONE_PRIO[t.priority] ?? ''} ${t.priority}` +\n              (t.category ? ` · ${esc(t.category)}` : ''),\n          )\n          .join('\\n\\n')\n      : '📭 Você não tem tarefas em aberto.\\n\\nCrie a primeira com <code>/add Minha tarefa</code>';\n    break;\n\n  case '/concluir':\n    mensagem =\n      numeros.length === 0\n        ? DICA_NUMERO('/concluir')\n        : relatorioLote({ icone: '🎉', singular: 'concluída', pluralForma: 'concluídas' });\n    break;\n\n  case '/remover':\n    mensagem =\n      numeros.length === 0\n        ? DICA_NUMERO('/remover')\n        : relatorioLote({\n            icone: '🗑',\n            singular: 'removida',\n            pluralForma: 'removidas',\n            riscar: true,\n          });\n    break;\n\n  default: {\n    const saudacao =\n      comando === '/start'\n        ? `👋 Bem-vinda de volta, <b>${entrada.first_name_safe}</b>!\\n\\n`\n        : '';\n    mensagem = saudacao + AJUDA;\n  }\n}\n\nreturn [{ json: { chat_id: entrada.chat_id, mensagem } }];"
+        "jsCode": "// ===================================================================\n// Montar Resposta — traduz o resultado do banco em mensagem de chat\n// ===================================================================\n\nconst entrada = $('Normalizar Entrada').first().json;\nconst comando = entrada.comando;\nconst argumento = (entrada.argumento ?? '').trim();\nconst numeros = entrada.numeros ?? [];\n\n// Só são tarefas de verdade as linhas que têm \"numero\".\n// (O nó Postgres emite { success: true } quando a query não retorna nada.)\nconst tarefas = $input\n  .all()\n  .map((item) => item.json)\n  .filter((linha) => linha?.numero != null)\n  .sort((a, b) => a.numero - b.numero);\n\nconst encontrou = tarefas.length > 0;\n\n// Quais dos números pedidos NÃO foram afetados?\nconst afetados = tarefas.map((t) => t.numero);\nconst naoEncontrados = numeros.filter((n) => !afetados.includes(n));\n\n// -------------------------------------------------------------------\n// Utilitários\n// -------------------------------------------------------------------\nconst esc = (v) =>\n  String(v ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n\nconst plural = (n, singular, pluralForma) => (n === 1 ? singular : pluralForma);\n\nconst ICONE_PRIO = { baixa: '🔵', media: '🟡', alta: '🟠', urgente: '🔴' };\n\nconst AJUDA = [\n  '<b>🤖 Comandos disponíveis</b>',\n  '',\n  '<code>/add Comprar café</code> — cria uma tarefa',\n  '<code>/listar</code> — mostra suas tarefas em aberto',\n  '<code>/concluir 3</code> — conclui a tarefa #3',\n  '<code>/remover 3</code> — apaga a tarefa #3',\n  '',\n  '<i>Os comandos /concluir e /remover aceitam vários números:</i>',\n  '<code>/concluir 2 3 4</code>',\n].join('\\n');\n\nconst DICA_NUMERO = (cmd) =>\n  `⚠️ Informe o número da tarefa.\\n\\n` +\n  `Exemplo: <code>${cmd} 3</code>\\n` +\n  `Vários de uma vez: <code>${cmd} 2 3 4</code>\\n` +\n  `Veja os números com <code>/listar</code>`;\n\n// Monta o relatório de uma operação em lote\nconst relatorioLote = ({ icone, singular, pluralForma, riscar = false }) => {\n  const linhas = [];\n\n  if (tarefas.length > 0) {\n    linhas.push(\n      `${icone} <b>${tarefas.length} ${plural(tarefas.length, 'tarefa', 'tarefas')} ` +\n        `${plural(tarefas.length, singular, pluralForma)}</b>`,\n      '',\n      ...tarefas.map(\n        (t) => `  <b>#${t.numero}</b> ${riscar ? `<s>${esc(t.title)}</s>` : esc(t.title)}`,\n      ),\n    );\n  }\n\n  if (naoEncontrados.length > 0) {\n    if (linhas.length > 0) linhas.push('');\n    linhas.push(\n      `⚠️ Não encontrei: ${naoEncontrados.map((n) => `#${n}`).join(', ')}`,\n      `<i>Confira os números com /listar</i>`,\n    );\n  }\n\n  return linhas.join('\\n');\n};\n\n// -------------------------------------------------------------------\n// Resposta por comando\n// -------------------------------------------------------------------\nlet mensagem;\n\nswitch (comando) {\n   case '/add':\n    if (argumento === '') {\n      mensagem = '⚠️ Preciso do texto da tarefa.\\n\\nExemplo: <code>/add Comprar café</code>';\n    } else if (encontrou) {\n      const t = tarefas[0];\n      mensagem =\n        `✅ Tarefa <b>#${t.numero}</b> criada:\\n${esc(t.title)}\\n\\n` +\n        `${ICONE_PRIO[t.priority] ?? ''} Prioridade: <b>${t.priority}</b>\\n` +\n        `🏷 Categoria: <b>${esc(t.category ?? 'outros')}</b>`;\n    } else {\n      mensagem = '❌ Não consegui criar a tarefa. Tente novamente.';\n    }\n    break;\n\n  case '/listar':\n    mensagem = encontrou\n      ? '📋 <b>Suas tarefas em aberto</b>\\n\\n' +\n        tarefas\n          .map(\n            (t) =>\n              `<b>#${t.numero}</b> ${esc(t.title)}\\n` +\n              `      ${ICONE_PRIO[t.priority] ?? ''} ${t.priority}` +\n              (t.category ? ` · ${esc(t.category)}` : ''),\n          )\n          .join('\\n\\n')\n      : '📭 Você não tem tarefas em aberto.\\n\\nCrie a primeira com <code>/add Minha tarefa</code>';\n    break;\n\n  case '/concluir':\n    mensagem =\n      numeros.length === 0\n        ? DICA_NUMERO('/concluir')\n        : relatorioLote({ icone: '🎉', singular: 'concluída', pluralForma: 'concluídas' });\n    break;\n\n  case '/remover':\n    mensagem =\n      numeros.length === 0\n        ? DICA_NUMERO('/remover')\n        : relatorioLote({\n            icone: '🗑',\n            singular: 'removida',\n            pluralForma: 'removidas',\n            riscar: true,\n          });\n    break;\n\n  default: {\n    const saudacao =\n      comando === '/start'\n        ? `👋 Bem-vinda de volta, <b>${entrada.first_name_safe}</b>!\\n\\n`\n        : '';\n    mensagem = saudacao + AJUDA;\n  }\n}\n\nreturn [{ json: { chat_id: entrada.chat_id, mensagem } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1488,
+        1504,
         -336
       ],
       "id": "b5ebafd6-5618-4f14-bc55-a62722d1fdce",
@@ -423,7 +423,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        976,
+        992,
         -816
       ],
       "id": "5723d7b1-9f40-4a02-a401-94baec071bba",
@@ -445,7 +445,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        1264,
+        1280,
         -816
       ],
       "id": "ca3cd7a6-7556-418d-b54f-b0ede8b44088",
@@ -465,7 +465,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1456,
+        1472,
         -816
       ],
       "id": "a0178975-a616-4daa-b5d6-a1bdcbab8009",
@@ -676,7 +676,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "3c1c84be-393a-4de6-97b7-e5e95f54351f",
+  "versionId": "cbb66607-eef5-4b06-ae3f-3e22b7e88a8c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e039f1f873b7672c729181f0a25795dcab5bb58a75adc526d690b356e9566c0c"
