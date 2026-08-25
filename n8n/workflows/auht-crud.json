@@ -1,0 +1,562 @@
+{
+  "name": "auht-welcome",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "44925c3b-024c-4a32-837e-bb93aa74d2c4",
+      "name": "Telegram Trigger",
+      "webhookId": "fe5f1f1a-8574-46fd-ab4c-b43fa6a36210",
+      "credentials": {
+        "telegramApi": {
+          "id": "s4WJy61dJIVc7rxA",
+          "name": "Telegram - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select id, first_name, is_active\nfrom public.users\nwhere telegram_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.telegram_id ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        384,
+        16
+      ],
+      "id": "c4f0d2d8-38f0-45d4-9038-398b223aa2da",
+      "name": "Buscar Usuário",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6ffad313-9c63-42bb-b739-1bffb007a87c",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        16
+      ],
+      "id": "e1f8e2c0-3bf8-471c-9d79-b2db4febc6d5",
+      "name": "Usuário Existe"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with chave as (\n  select upper(encode(extensions.gen_random_bytes(6), 'hex')) as valor\n),\nnovo_usuario as (\n  insert into public.users (telegram_id, first_name, username, access_key_hash)\n  select $1::bigint, $2::text, $3::text,\n         extensions.crypt(chave.valor, extensions.gen_salt('bf', 10))\n  from chave\n  on conflict (telegram_id) do nothing\n  returning id, first_name, created_at\n)\nselect novo_usuario.id,\n       novo_usuario.first_name,\n       chave.valor as access_key\nfrom novo_usuario, chave;",
+        "options": {
+          "queryReplacement": "{{ [ $('Normalizar Entrada').item.json.telegram_id, $('Normalizar Entrada').item.json.first_name, $('Normalizar Entrada').item.json.username ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        832,
+        112
+      ],
+      "id": "27176f5c-92e2-4808-bf0b-1a3370d2e465",
+      "name": "Registrar Usuário",
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizar Entrada').first().json.chat_id }}",
+        "text": "=Cadastro concluído, {{ $('Normalizar Entrada').item.json.first_name }}!  Sua chave de acesso é: {{ $json.access_key }}  Guarde esta chave em local seguro. Ela é exibida apenas uma vez e não pode ser recuperada — armazenamos somente uma versão criptografada dela.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        128
+      ],
+      "id": "7da8bcb8-c34b-4b86-b855-b43f7fbc12f6",
+      "name": "Enviar Chave de Acesso",
+      "webhookId": "d8d706e4-9075-4050-b34a-abeed4995b4b",
+      "credentials": {
+        "telegramApi": {
+          "id": "s4WJy61dJIVc7rxA",
+          "name": "Telegram - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const update = $input.first().json;\nconst msg = update.message ?? update.edited_message;\n\nif (!msg?.from || !msg?.chat) {\n  return [];\n}\n\n// Escapa os 3 caracteres que o parse_mode HTML do Telegram interpreta\nconst escapeHtml = (valor) =>\n  String(valor ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n\nconst texto = (msg.text ?? '').trim();\n// Separa o primeiro token (comando) do resto (argumento)\nconst primeiroToken = texto.split(/\\s+/)[0] ?? '';\nconst comando = primeiroToken.toLowerCase().split('@')[0];\nconst argumento = texto.slice(primeiroToken.length).trim();\nconst firstName = (msg.from.first_name ?? 'Usuário').trim().slice(0, 80);\n\nreturn [{\n  json: {\n    telegram_id: msg.from.id,\n    chat_id: msg.chat.id,\n    first_name: firstName,            // valor cru → vai para o banco\n    first_name_safe: escapeHtml(firstName), // valor escapado → vai para a tela\n    username: msg.from.username ?? null,\n    texto,\n    comando,\n    argumento,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ebf94eb9-a72d-4752-bd8a-d1f95313feb9",
+      "name": "Normalizar Entrada"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Normalizar Entrada').first().json.comando }}",
+                    "rightValue": "/add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6c2d82f5-eed7-4bb6-a66e-f19809c631f6"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=add"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cb76b6b2-3bd8-4a61-a02e-43751639f696",
+                    "leftValue": "={{ $('Normalizar Entrada').first().json.comando }}",
+                    "rightValue": "/listar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "listar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "dfd68a1f-ab7b-4d68-8df4-b538594c21cc",
+                    "leftValue": "={{ $('Normalizar Entrada').first().json.comando }}",
+                    "rightValue": "/concluir",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "concluir"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "03365c12-8abd-4ea6-b3aa-0b87ff5ad608",
+                    "leftValue": "={{ $('Normalizar Entrada').first().json.comando }}",
+                    "rightValue": "/remover",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "remover"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        -256
+      ],
+      "id": "aa05d56d-c630-4e42-87fb-60851f340e5e",
+      "name": "Roteador de Comandos"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "delete from public.tasks\nwhere user_id = $1::uuid\n  and numero = (case when $2::text ~ '^[0-9]+$' then ($2::text)::integer end)\nreturning numero, title;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, $('Normalizar Entrada').first().json.argumento ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1088,
+        -160
+      ],
+      "id": "f5c91b98-b495-4e9d-b408-236970feb2f2",
+      "name": "Remover Tarefa",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update public.tasks\nset status = 'concluida'\nwhere user_id = $1::uuid\n  and numero = (case when $2::text ~ '^[0-9]+$' then ($2::text)::integer end)\n  and status <> 'concluida'\nreturning numero, title;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, $('Normalizar Entrada').first().json.argumento ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1088,
+        -336
+      ],
+      "id": "86d0c624-480b-4833-95a5-c202970ccad1",
+      "name": "Concluir Tarefa",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select numero, title, status, priority, category, due_date\nfrom public.tasks\nwhere user_id = $1::uuid\n  and status not in ('concluida', 'cancelada')\norder by\n  case priority\n    when 'urgente' then 1\n    when 'alta'    then 2\n    when 'media'   then 3\n    else 4\n  end,\n  numero\nlimit 30;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1088,
+        -512
+      ],
+      "id": "1e352d12-26bc-48fc-96b8-cf43cd478044",
+      "name": "Listar Tarefas",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with entrada as (\n  select $1::uuid as user_id,\n         left(nullif(trim($2::text), ''), 200) as title\n),\nproximo as (\n  select coalesce(max(t.numero), 0) + 1 as numero\n  from public.tasks t, entrada e\n  where t.user_id = e.user_id\n)\ninsert into public.tasks (user_id, numero, title)\nselect e.user_id, p.numero, e.title\nfrom entrada e, proximo p\nwhere e.title is not null\nreturning numero, title;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, $('Normalizar Entrada').first().json.argumento ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1088,
+        -688
+      ],
+      "id": "77e9c898-2c45-4842-a8cf-89777ff739fb",
+      "name": "Criar Tarefa",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MiidImH7NC2nDyrG",
+          "name": "Postgres/supabase - tasks bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const entrada = $('Normalizar Entrada').first().json;\nconst comando = entrada.comando;\n\n// Descarta o item vazio que o \"Always Output Data\" injeta quando o SQL não retorna nada\nconst itens = $input.all()\n  .map((i) => i.json)\n  .filter((j) => j && Object.keys(j).length > 0);\n\nconst esc = (v) =>\n  String(v ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n\nconst ICONE_STATUS = { pendente: '⏳', em_andamento: '🔄' };\nconst ICONE_PRIO = { baixa: '🔵', media: '🟡', alta: '🟠', urgente: '🔴' };\n\nconst AJUDA = [\n  '<b>Comandos disponíveis</b>',\n  '',\n  '<code>/add Comprar café</code> — cria uma tarefa',\n  '<code>/listar</code> — mostra suas tarefas em aberto',\n  '<code>/concluir 3</code> — conclui a tarefa #3',\n  '<code>/remover 3</code> — apaga a tarefa #3',\n  '<code>/ajuda</code> — mostra esta mensagem',\n].join('\\n');\n\nlet mensagem;\n\nswitch (comando) {\n  case '/add':\n    mensagem = itens.length\n      ? `✅ Tarefa <b>#${itens[0].numero}</b> criada:\\n${esc(itens[0].title)}`\n      : `⚠️ Preciso do texto da tarefa.\\n\\nExemplo: <code>/add Comprar café</code>`;\n    break;\n\n  case '/listar':\n    mensagem = itens.length\n      ? '📋 <b>Suas tarefas em aberto</b>\\n\\n' +\n        itens\n          .map(\n            (t) =>\n              `${ICONE_STATUS[t.status] ?? '•'} <b>#${t.numero}</b> ${esc(t.title)}\\n` +\n              `      ${ICONE_PRIO[t.priority] ?? ''} ${t.priority}` +\n              (t.category ? ` · ${esc(t.category)}` : ''),\n          )\n          .join('\\n\\n')\n      : '📭 Você não tem tarefas em aberto.\\n\\nCrie a primeira com <code>/add Minha tarefa</code>';\n    break;\n\n  case '/concluir':\n    mensagem = itens.length\n      ? `🎉 Tarefa <b>#${itens[0].numero}</b> concluída:\\n${esc(itens[0].title)}`\n      : '⚠️ Não encontrei essa tarefa em aberto.\\n\\nConfira o número com <code>/listar</code>';\n    break;\n\n  case '/remover':\n    mensagem = itens.length\n      ? `🗑 Tarefa <b>#${itens[0].numero}</b> removida:\\n<s>${esc(itens[0].title)}</s>`\n      : '⚠️ Não encontrei essa tarefa.\\n\\nConfira o número com <code>/listar</code>';\n    break;\n\n  default: {\n    const saudacao =\n      comando === '/start' ? `👋 Bem-vinda de volta, <b>${entrada.first_name_safe}</b>!\\n\\n` : '';\n    mensagem = saudacao + AJUDA;\n  }\n}\n\nreturn [{ json: { chat_id: entrada.chat_id, mensagem } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        -336
+      ],
+      "id": "b5ebafd6-5618-4f14-bc55-a62722d1fdce",
+      "name": "Montar Resposta"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.mensagem }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        -336
+      ],
+      "id": "3889983b-4ca0-4d34-982b-1bda178869e8",
+      "name": "Responder",
+      "webhookId": "c9cd53f4-76cb-46d8-9a97-7b528f16af40",
+      "credentials": {
+        "telegramApi": {
+          "id": "s4WJy61dJIVc7rxA",
+          "name": "Telegram - tasks bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Usuário": {
+      "main": [
+        [
+          {
+            "node": "Usuário Existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Usuário Existe": {
+      "main": [
+        [
+          {
+            "node": "Roteador de Comandos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Usuário": {
+      "main": [
+        [
+          {
+            "node": "Enviar Chave de Acesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Entrada": {
+      "main": [
+        [
+          {
+            "node": "Buscar Usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador de Comandos": {
+      "main": [
+        [
+          {
+            "node": "Criar Tarefa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Listar Tarefas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Concluir Tarefa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Remover Tarefa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remover Tarefa": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Concluir Tarefa": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar Tarefas": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Tarefa": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Resposta": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ede5e6ef-128d-4cfc-931f-5652f5870f6f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e039f1f873b7672c729181f0a25795dcab5bb58a75adc526d690b356e9566c0c"
+  },
+  "nodeGroups": [],
+  "id": "ZADW1Uynpy2R1jGg",
+  "tags": []
+}
