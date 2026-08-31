@@ -40,3 +40,8 @@ desktop.ini
 tmp/
 dist/
 build/
+
+
+web/.env
+web/node_modules
+web/dist

@@ -1,0 +1,16 @@
+import { createClient } from "@supabase/supabase-js";
+
+const url = import.meta.env.VITE_SUPABASE_URL;
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!url || !anonKey) {
+  throw new Error('Faltam VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no .env');
+}
+
+export const supabase = createClient(url, anonKey, {
+   auth: {
+      persistSession: true,     // guarda a sessão no dispositivo
+      autoRefreshToken: true,   // renova antes de expirar, sem novo login
+      detectSessionInUrl: true, // consome o retorno do Google e limpa a URL
+   },
+});

@@ -1,0 +1,13 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+body { margin: 0; padding: 1.5rem; max-width: 46rem; margin-inline: auto; }
+.centro { display: grid; gap: 1rem; place-items: start; padding-block: 3rem; }
+.topo { display: flex; align-items: baseline; justify-content: space-between; }
+.botao { padding: .7rem 1.2rem; border: 0; border-radius: 6px; background: #24567f; color: #fff; font-size: 1rem; cursor: pointer; }
+.botao:disabled { opacity: .5; cursor: not-allowed; }
+.link { background: none; border: 0; color: #24567f; text-decoration: underline; cursor: pointer; padding: 0; font-size: .95rem; }
+.codigo { font-size: 2rem; letter-spacing: .4em; width: 7em; padding: .4rem; text-align: center; font-variant-numeric: tabular-nums; }
+.erro { color: #9e3b2e; }
+.lista { list-style: none; padding: 0; display: grid; gap: .8rem; }
+.lista li { border: 1px solid #d8dbd3; border-radius: 6px; padding: .8rem; }
+.lista small { display: block; opacity: .65; margin-top: .2rem; }
+form { display: grid; gap: .8rem; justify-items: start; }
