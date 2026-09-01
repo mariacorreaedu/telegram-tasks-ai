@@ -1,7 +1,7 @@
 import { useDraggable } from '@dnd-kit/core';
 import { PRIORIDADES, SYNC, TIPOS, fmtData, icone, linkGoogleAgenda } from '../dados/constantes';
 
-export default function Card({ entrada, aoAbrir }) {
+export default function Card({ entrada, aoAbrir, aoAgendar  }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: entrada.id,
     data: { coluna: entrada.coluna },
@@ -44,9 +44,9 @@ export default function Card({ entrada, aoAbrir }) {
             type="button"
             className="card-acao"
             onPointerDown={semArrastar}
-            onClick={abrirAgenda}
+            onClick={(e) => { e.stopPropagation(); aoAgendar(entrada); }}
             title="Adicionar ao Google Agenda"
-          >
+         >
             📆
           </button>
         )}

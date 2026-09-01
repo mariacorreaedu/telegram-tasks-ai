@@ -9,7 +9,7 @@ import Calendario from '../calendario/Calendario';
 
 export default function Painel() {
   const { usuario, sair } = useAuth();
-  const { entradas, carregando, aviso, setAviso, mover, salvar, concluir, excluir } = useEntradas();
+  const { entradas, carregando, aviso, setAviso, mover, salvar, concluir, excluir, enviarAoGoogle } = useEntradas();
   const [aberta, setAberta] = useState(null);
   const [vista, setVista] = useState('quadro');
 
@@ -83,7 +83,12 @@ export default function Painel() {
         )}
 
         {!carregando && vista === 'quadro' && (
-          <Quadro entradas={entradas} aoMover={mover} aoAbrir={setAberta} />
+          <Quadro
+            entradas={entradas}
+            mover={mover}
+            enviarAoGoogle={enviarAoGoogle}
+            aoAbrir={setEmEdicao}
+         />
         )}
         {!carregando && vista === 'calendario' && (
           <Calendario entradas={entradas} aoAbrir={setAberta} />

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { SO_FILA } from './constantes';
+import { criarEvento } from './googleAgenda';
 
 const CAMPOS =
   'id, numero, tipo, titulo, conteudo, categoria, prioridade, coluna, inicio, fim, origem, google_sync, google_event_id';
@@ -100,5 +101,33 @@ export function useEntradas() {
     }
   };
 
-  return { entradas, carregando, aviso, setAviso, carregar, mover, salvar, concluir, excluir };
+  const enviarAoGoogle = async (entrada, { inicio, fim }) => {
+   const evento = await criarEvento({
+     titulo: entrada.titulo,
+     conteudo: entrada.conteudo,
+     inicio,
+     fim,
+   });
+
+   const { data, error } = await supabase
+      .from('entries')
+      .update({
+         inicio,
+         fim,
+         google_event_id: evento.id,
+         google_sync: 'sincronizado',
+         coluna: 'com_prazo', // ganhou data confirmada, então muda de coluna
+      })
+      .eq('id', entrada.id)
+      .select()
+      .single();
+
+      if (error) throw new Error(error.message);
+
+      setEntradas((l) => l.map((e) => (e.id === data.id ? data : e)));
+      return evento;
+   };
+
+
+  return { entradas, carregando, aviso, setAviso, carregar, mover, salvar, concluir, excluir, enviarAoGoogle  };
 }

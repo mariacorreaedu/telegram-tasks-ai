@@ -1,35 +1,40 @@
 import { useDroppable } from '@dnd-kit/core';
 import Card from './Card';
 
-export default function Coluna({ coluna, entradas, aoAbrir }) {
-  const { setNodeRef, isOver } = useDroppable({ id: coluna.chave });
+// agrupa os cards por categoria, mantendo a ordem de chegada
+function porCategoria(entradas) {
+  const mapa = new Map();
+  for (const e of entradas) {
+    const chave = e.categoria ?? 'sem categoria';
+    if (!mapa.has(chave)) mapa.set(chave, []);
+    mapa.get(chave).push(e);
+  }
+  return [...mapa.entries()];
+}
 
-  // Dentro da coluna, agrupar por categoria: é o recorte que ajuda a decidir.
-  const grupos = entradas.reduce((acc, e) => {
-    (acc[e.categoria ?? 'outros'] ??= []).push(e);
-    return acc;
-  }, {});
-  const categorias = Object.keys(grupos).sort();
+export default function Coluna({ coluna, entradas, aoAbrir, aoAgendar }) {
+  const { setNodeRef, isOver } = useDroppable({ id: coluna.chave });
+  const grupos = porCategoria(entradas);
 
   return (
     <section ref={setNodeRef} className={`coluna${isOver ? ' sobre' : ''}`}>
-      <h2 className="coluna-titulo">
-        {coluna.icone} {coluna.rotulo}
-        <span className="coluna-contagem">{entradas.length}</span>
-      </h2>
+      <header className="coluna-topo">
+        <span>{coluna.icone} {coluna.rotulo}</span>
+        <span className="coluna-contador">{entradas.length}</span>
+      </header>
 
-      {entradas.length === 0 ? (
-        <p className="coluna-vazia">Nada aqui.</p>
-      ) : (
-        categorias.map((cat) => (
-          <div key={cat} className="grupo">
-            <h3 className="grupo-titulo">{cat}</h3>
-            {grupos[cat].map((e) => (
-              <Card key={e.id} entrada={e} aoAbrir={aoAbrir} />
+      <div className="coluna-corpo">
+        {grupos.length === 0 && <p className="coluna-vazia">Nada aqui.</p>}
+
+        {grupos.map(([categoria, itens]) => (
+          <div key={categoria} className="grupo">
+            <h4 className="grupo-titulo">{categoria}</h4>
+            {itens.map((e) => (
+              <Card key={e.id} entrada={e} aoAbrir={aoAbrir} aoAgendar={aoAgendar} />
             ))}
           </div>
-        ))
-      )}
+        ))}
+      </div>
     </section>
   );
 }

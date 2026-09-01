@@ -8,9 +8,9 @@ const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
-  const [sessao, setSessao] = useState(null);
+  const [sessao, setSessao] = useState(null); //login
   const [usuario, setUsuario] = useState(null); // linha de public.users, ou null se não vinculada
-  const [carregando, setCarregando] = useState(true);
+  const [carregando, setCarregando] = useState(true); //tela de espera
 
   const carregarUsuario = useCallback(async (s) => {
     if (!s) {
@@ -23,10 +23,10 @@ export function AuthProvider({ children }) {
       .from('users')
       .select('id, first_name, setor')
       .maybeSingle();
-    setUsuario(data ?? null);
+    setUsuario(data ?? null);3
   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
     let ativo = true;
 
     supabase.auth.getSession().then(async ({ data }) => {

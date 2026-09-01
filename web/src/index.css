@@ -235,4 +235,21 @@ input, select, textarea {
   .conteudo { padding: 1rem; }
   .linha { grid-template-columns: 1fr; }
   .cal-dia { min-height: 3.6rem; }
+
 }
+
+.selo {
+   font-size: .62rem; font-weight: 600; letter-spacing: .02em;
+   padding: .1rem .3rem; border-radius: 3px; white-space: nowrap;
+ }
+ .selo-ok   { background: color-mix(in srgb, #22c55e 18%, transparent); color: #16a34a; }
+ .selo-erro { background: color-mix(in srgb, #ef4444 18%, transparent); color: #dc2626; }
+ 
+ .modal-titulo-entrada {
+   font-weight: 600; margin: 0 0 .8rem; color: var(--txt);
+ }
+ .modal-erro {
+   background: color-mix(in srgb, #ef4444 12%, transparent);
+   border-left: 3px solid #ef4444; color: #dc2626;
+   padding: .5rem .6rem; border-radius: 4px; font-size: .78rem; margin: .6rem 0 0;
+ }
