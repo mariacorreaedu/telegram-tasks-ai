@@ -1,5 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
-import { fmtData, icone, linkGoogleAgenda } from '../dados/constantes';
+import { PRIORIDADES, TIPOS, fmtData, icone, linkGoogleAgenda } from '../dados/constantes';
 
 export default function Card({ entrada, aoAbrir }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -8,6 +8,7 @@ export default function Card({ entrada, aoAbrir }) {
   });
 
   const link = linkGoogleAgenda(entrada);
+  const corPrioridade = PRIORIDADES.find((p) => p.chave === entrada.prioridade)?.cor;
   const semArrastar = (e) => e.stopPropagation();
 
   const abrirAgenda = (e) => {
@@ -18,15 +19,18 @@ export default function Card({ entrada, aoAbrir }) {
   return (
     <article
       ref={setNodeRef}
-      className={`card card-entrada ${isDragging ? 'arrastando' : ''}`}
+      className={`card-entrada ${isDragging ? 'arrastando' : ''}`}
       style={{
+        borderInlineStartColor: corPrioridade,
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
       }}
       {...listeners}
       {...attributes}
     >
       <div className="card-header">
-        <h4 className="card-titulo">{entrada.titulo}</h4>
+        <h4 className="card-titulo">
+          <span aria-hidden="true">{icone(TIPOS, entrada.tipo)}</span> {entrada.titulo}
+        </h4>
         <button
           type="button"
           className="btn btn-ghost btn-sm"

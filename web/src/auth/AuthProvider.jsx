@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
       .from('users')
       .select('id, first_name, setor')
       .maybeSingle();
-    setUsuario(data ?? null);3
+    setUsuario(data ?? null);
   }, []);
 
    useEffect(() => {
