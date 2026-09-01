@@ -103,7 +103,7 @@ export function useEntradas() {
 
   const enviarAoGoogle = async (entrada, { inicio, fim }) => {
    const evento = await criarEvento({
-     titulo: entrada.tistulo,
+     titulo: entrada.titulo,
      conteudo: entrada.conteudo,
      inicio,
      fim,

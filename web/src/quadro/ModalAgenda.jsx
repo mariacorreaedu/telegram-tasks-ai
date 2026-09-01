@@ -20,7 +20,7 @@ export default function ModalAgenda({ entrada, aoEnviar, aoFechar }) {
     setEnviando(true);
     setErro(null);
     try {
-      await aoEnviar({ inicio: deInputLocal(inicio), fim: deInputLocal(fim) });
+      await aoEnviar(entrada,{ inicio: deInputLocal(inicio), fim: deInputLocal(fim) });
       aoFechar();
     } catch (e) {
       setErro(e.message);
@@ -40,7 +40,6 @@ export default function ModalAgenda({ entrada, aoEnviar, aoFechar }) {
         </label>
 
         <label>
-          Fim
           <input type="datetime-local" value={fim} onChange={(e) => setFim(e.target.value)} />
         </label>
 
