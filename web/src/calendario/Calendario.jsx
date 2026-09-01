@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SYNC, TIPOS, fmtHora, icone } from '../dados/constantes';
 
 const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
@@ -38,9 +39,13 @@ export default function Calendario({ entradas, aoAbrir }) {
   return (
     <section className="calendario">
       <header className="cal-topo">
-        <button className="link" onClick={() => mover(-1)}>← anterior</button>
+        <button className="link" onClick={() => mover(-1)}>
+          <ChevronLeft size={16} strokeWidth={2.25} aria-hidden="true" /> anterior
+        </button>
         <h2>{mes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2>
-        <button className="link" onClick={() => mover(1)}>próximo →</button>
+        <button className="link" onClick={() => mover(1)}>
+          próximo <ChevronRight size={16} strokeWidth={2.25} aria-hidden="true" />
+        </button>
       </header>
 
       <div className="cal-grade">
@@ -54,16 +59,19 @@ export default function Calendario({ entradas, aoAbrir }) {
           return (
             <div key={chave} className={`cal-dia${chave === hoje ? ' hoje' : ''}`}>
               <span className="cal-numero">{dia.getDate()}</span>
-              {doDia.map((e) => (
-                <button
-                  key={e.id}
-                  className={`cal-item${e.google_sync === 'enviado' ? ' na-agenda' : ''}`}
-                  onClick={() => aoAbrir(e)}
-                  title={SYNC[e.google_sync]?.rotulo ?? 'Só aqui'}
-                >
-                  {icone(TIPOS, e.tipo)} {fmtHora(e.inicio)} {e.titulo}
-                </button>
-              ))}
+              {doDia.map((e) => {
+                const Icone = icone(TIPOS, e.tipo);
+                return (
+                  <button
+                    key={e.id}
+                    className={`cal-item${e.google_sync === 'enviado' ? ' na-agenda' : ''}`}
+                    onClick={() => aoAbrir(e)}
+                    title={SYNC[e.google_sync]?.rotulo ?? 'Só aqui'}
+                  >
+                    <Icone size={11} aria-hidden="true" /> {fmtHora(e.inicio)} {e.titulo}
+                  </button>
+                );
+              })}
             </div>
           );
         })}

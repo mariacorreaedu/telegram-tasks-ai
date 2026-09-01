@@ -19,7 +19,12 @@
    --status-warning: #f59e0b;
    --status-error: #ef4444;
    --status-info: #3b82f6;
-   
+
+   --aviso-bg: #fef3c7;
+   --aviso-texto: #92400e;
+   --sucesso-bg: #d1fae5;
+   --sucesso-texto: #065f46;
+
    /* Espaçamentos */
    --spacing-xs: 0.25rem;
    --spacing-sm: 0.5rem;
@@ -50,31 +55,52 @@
  
  @media (prefers-color-scheme: dark) {
    :root:not([data-theme='claro']) {
-     --bg-base: #1a1a1a;
-     --bg-secondary: #2d2d2d;
-     --bg-tertiary: #3d3d3d;
-     
-     --text-primary: #fafafa;
-     --text-secondary: #d0d0d0;
-     --text-tertiary: #9ca3af;
-     
-     --border-color: #404040;
-     --border-subtle: #2d2d2d;
-     
-     --accent-light: #1e3a8a;
+     --bg-base: #0a0a0a;
+     --bg-secondary: #111113;
+     --bg-tertiary: #1c1c1f;
+
+     --text-primary: #ededed;
+     --text-secondary: #a1a1aa;
+     --text-tertiary: #71717a;
+
+     --border-color: #26262b;
+     --border-subtle: #1c1c1f;
+
+     --accent-light: rgba(37, 99, 235, 0.18);
+
+     --aviso-bg: rgba(245, 158, 11, 0.15);
+     --aviso-texto: #fbbf24;
+     --sucesso-bg: rgba(16, 185, 129, 0.15);
+     --sucesso-texto: #34d399;
+
+     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+     --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.6);
    }
  }
- 
+
  :root[data-theme='escuro'] {
-   --bg-base: #1a1a1a;
-   --bg-secondary: #2d2d2d;
-   --bg-tertiary: #3d3d3d;
-   --text-primary: #fafafa;
-   --text-secondary: #d0d0d0;
-   --text-tertiary: #9ca3af;
-   --border-color: #404040;
-   --border-subtle: #2d2d2d;
-   --accent-light: #1e3a8a;
+   --bg-base: #0a0a0a;
+   --bg-secondary: #111113;
+   --bg-tertiary: #1c1c1f;
+
+   --text-primary: #ededed;
+   --text-secondary: #a1a1aa;
+   --text-tertiary: #71717a;
+
+   --border-color: #26262b;
+   --border-subtle: #1c1c1f;
+
+   --accent-light: rgba(37, 99, 235, 0.18);
+
+   --aviso-bg: rgba(245, 158, 11, 0.15);
+   --aviso-texto: #fbbf24;
+   --sucesso-bg: rgba(16, 185, 129, 0.15);
+   --sucesso-texto: #34d399;
+
+   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+   --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.6);
  }
  
  /* Reset e base */
@@ -224,6 +250,9 @@
  }
 
  .sidebar-header h2 {
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-sm);
    font-size: var(--font-size-lg);
    color: var(--text-primary);
    margin-bottom: var(--spacing-xs);
@@ -247,6 +276,7 @@
    justify-content: space-between;
    gap: var(--spacing-sm);
    padding: var(--spacing-sm) var(--spacing-md);
+   border-inline-start: 2px solid transparent;
    border-radius: var(--radius-md);
    font-size: var(--font-size-sm);
    font-weight: 500;
@@ -256,14 +286,22 @@
    text-align: left;
  }
 
+ .nav-rotulo {
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-sm);
+ }
+
  .nav-item:hover {
    background-color: var(--bg-tertiary);
    color: var(--text-primary);
  }
 
  .nav-item.ativo {
-   background-color: var(--accent-primary);
-   color: white;
+   background-color: var(--bg-tertiary);
+   border-inline-start-color: var(--accent-primary);
+   color: var(--text-primary);
+   font-weight: 600;
  }
 
  .nav-contador {
@@ -276,8 +314,8 @@
  }
 
  .nav-item.ativo .nav-contador {
-   background-color: rgba(255, 255, 255, 0.25);
-   color: white;
+   background-color: var(--accent-light);
+   color: var(--accent-primary);
  }
 
  .sidebar-footer {
@@ -310,11 +348,11 @@
    gap: var(--spacing-md);
    padding: var(--spacing-sm) var(--spacing-md);
    margin-bottom: var(--spacing-lg);
-   background-color: #fef3c7;
+   background-color: var(--aviso-bg);
    border: 1px solid var(--status-warning);
    border-radius: var(--radius-md);
    font-size: var(--font-size-sm);
-   color: #92400e;
+   color: var(--aviso-texto);
  }
 
  .estado-carregando,
@@ -382,6 +420,23 @@
    font-weight: 600;
    font-size: var(--font-size-sm);
    border-bottom: 1px solid var(--border-color);
+ }
+
+ .coluna-titulo {
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-sm);
+ }
+
+ /* selo circular colorido usado em cabecalhos de coluna e do menu Notas */
+ .icone-badge {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 26px;
+   height: 26px;
+   border-radius: 50%;
+   flex-shrink: 0;
  }
 
  .coluna-contador {
@@ -582,6 +637,37 @@
    font-size: var(--font-size-xs);
  }
 
+ .btn-icone {
+   padding: 4px;
+   border-radius: 50%;
+ }
+
+ .selo {
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+   margin-top: var(--spacing-sm);
+   padding: var(--spacing-xs) var(--spacing-sm);
+   border-radius: 999px;
+   font-size: var(--font-size-xs);
+   font-weight: 500;
+ }
+
+ .selo-ok {
+   background-color: var(--sucesso-bg);
+   color: var(--sucesso-texto);
+ }
+
+ .selo-alerta {
+   background-color: var(--aviso-bg);
+   color: var(--aviso-texto);
+ }
+
+ .selo-erro {
+   background-color: rgba(239, 68, 68, 0.15);
+   color: var(--status-error);
+ }
+
  /* ---- modais --------------------------------------------------------------- */
 
  .modal-fundo {
@@ -765,7 +851,7 @@
  .aviso .link {
    background: none;
    border: none;
-   color: #92400e;
+   color: var(--aviso-texto);
    font-weight: 600;
    text-decoration: underline;
    cursor: pointer;
@@ -793,6 +879,9 @@
  }
 
  .cal-topo .link {
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
    background: none;
    border: none;
    color: var(--accent-primary);
@@ -856,7 +945,9 @@
 
  .cal-item {
    all: unset;
-   display: block;
+   display: flex;
+   align-items: center;
+   gap: 3px;
    width: 100%;
    font-size: 0.7rem;
    line-height: 1.3;
@@ -876,8 +967,8 @@
  }
 
  .cal-item.na-agenda {
-   background-color: #d1fae5;
-   color: #065f46;
+   background-color: var(--sucesso-bg);
+   color: var(--sucesso-texto);
  }
 
  .cal-legenda {

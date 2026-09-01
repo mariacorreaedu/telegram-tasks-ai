@@ -68,7 +68,7 @@ export default function ModalEdicao({ entrada, aoSalvar, aoConcluir, aoExcluir, 
               Tipo
               <select value={form.tipo} onChange={campo('tipo')}>
                 {TIPOS.map((t) => (
-                  <option key={t.chave} value={t.chave}>{t.icone} {t.rotulo}</option>
+                  <option key={t.chave} value={t.chave}>{t.rotulo}</option>
                 ))}
               </select>
             </label>

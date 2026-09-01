@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Monitor, Moon, Sun } from 'lucide-react';
 
 const CICLO = ['sistema', 'claro', 'escuro'];
-const ICONE = { sistema: '🖥', claro: '☀️', escuro: '🌙' };
+const ICONE = { sistema: Monitor, claro: Sun, escuro: Moon };
 const ROTULO = { sistema: 'Tema do sistema', claro: 'Tema claro', escuro: 'Tema escuro' };
 
 export default function AlternarTema() {
@@ -16,10 +17,11 @@ export default function AlternarTema() {
   }, [tema]);
 
   const proximo = () => setTema(CICLO[(CICLO.indexOf(tema) + 1) % CICLO.length]);
+  const Icone = ICONE[tema];
 
   return (
     <button className="tema" onClick={proximo} title={ROTULO[tema]} aria-label={ROTULO[tema]}>
-      <span aria-hidden="true">{ICONE[tema]}</span>
+      <Icone size={16} strokeWidth={2.25} aria-hidden="true" />
     </button>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CalendarDays, Inbox, ListTodo, LogOut, StickyNote } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { useEntradas } from '../dados/useEntradas';
 import { SO_FILA } from '../dados/constantes';
@@ -39,7 +40,9 @@ export default function Painel() {
     <div className="painel-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2>📥 Caixa</h2>
+          <h2>
+            <Inbox size={18} strokeWidth={2.25} aria-hidden="true" /> Caixa
+          </h2>
           {usuario?.first_name && <p className="sidebar-usuario">Olá, {usuario.first_name}</p>}
         </div>
 
@@ -48,20 +51,29 @@ export default function Painel() {
             className={`nav-item ${aba === 'quadro' ? 'ativo' : ''}`}
             onClick={() => setAba('quadro')}
           >
-            📋 Tarefas
+            <span className="nav-rotulo">
+              <ListTodo size={16} strokeWidth={2.25} aria-hidden="true" />
+              Tarefas
+            </span>
             <span className="nav-contador">{entradasQuadro.length}</span>
           </button>
           <button
             className={`nav-item ${aba === 'calendario' ? 'ativo' : ''}`}
             onClick={() => setAba('calendario')}
           >
-            📅 Calendário
+            <span className="nav-rotulo">
+              <CalendarDays size={16} strokeWidth={2.25} aria-hidden="true" />
+              Calendário
+            </span>
           </button>
           <button
             className={`nav-item ${aba === 'notas' ? 'ativo' : ''}`}
             onClick={() => setAba('notas')}
           >
-            📝 Notas
+            <span className="nav-rotulo">
+              <StickyNote size={16} strokeWidth={2.25} aria-hidden="true" />
+              Notas
+            </span>
             <span className="nav-contador">{entradasNotas.length}</span>
           </button>
         </nav>
@@ -69,7 +81,7 @@ export default function Painel() {
         <div className="sidebar-footer">
           <AlternarTema />
           <button className="btn btn-ghost" onClick={sair}>
-            Sair
+            <LogOut size={15} strokeWidth={2.25} aria-hidden="true" /> Sair
           </button>
         </div>
       </aside>

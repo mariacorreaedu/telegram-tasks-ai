@@ -1,25 +1,36 @@
+import {
+  Calendar,
+  CalendarClock,
+  FileText,
+  Inbox,
+  Lightbulb,
+  Mail,
+  SquareCheck,
+  Zap,
+} from 'lucide-react';
+
 // Fonte unica de dominio do front. Os valores das chaves espelham
 // exatamente os ENUMs do Postgres (migration 004) — se divergir, o insert falha.
 
 export const COLUNAS = [
-  { chave: 'com_prazo', rotulo: 'Com prazo', icone: '📅' },
-  { chave: 'sem_prazo', rotulo: 'Sem prazo', icone: '📥' },
-  { chave: 'fazer_hoje', rotulo: 'Fazer hoje', icone: '🔥' },
-  { chave: 'fila_espera', rotulo: 'Fila de espera', icone: '💡' },
+  { chave: 'com_prazo', rotulo: 'Com prazo', Icone: CalendarClock, cor: '#3b82f6' },
+  { chave: 'sem_prazo', rotulo: 'Sem prazo', Icone: Inbox, cor: '#64748b' },
+  { chave: 'fazer_hoje', rotulo: 'Fazer hoje', Icone: Zap, cor: '#f43f5e' },
+  { chave: 'fila_espera', rotulo: 'Fila de espera', Icone: Mail, cor: '#f59e0b' },
 ];
 
 export const TIPOS = [
-  { chave: 'tarefa', rotulo: 'Tarefa', icone: '✅' },
-  { chave: 'evento', rotulo: 'Evento', icone: '📆' },
-  { chave: 'nota', rotulo: 'Anotação', icone: '📝' },
-  { chave: 'ideia', rotulo: 'Ideia', icone: '💡' },
+  { chave: 'tarefa', rotulo: 'Tarefa', Icone: SquareCheck },
+  { chave: 'evento', rotulo: 'Evento', Icone: Calendar },
+  { chave: 'nota', rotulo: 'Anotação', Icone: FileText },
+  { chave: 'ideia', rotulo: 'Ideia', Icone: Lightbulb },
 ];
 
 export const PRIORIDADES = [
-  { chave: 'baixa', rotulo: 'Baixa', icone: '🟢', cor: '#22c55e' },
-  { chave: 'media', rotulo: 'Média', icone: '🟡', cor: '#eab308' },
-  { chave: 'alta', rotulo: 'Alta', icone: '🟠', cor: '#f97316' },
-  { chave: 'urgente', rotulo: 'Urgente', icone: '🔴', cor: '#ef4444' },
+  { chave: 'baixa', rotulo: 'Baixa', cor: '#22c55e' },
+  { chave: 'media', rotulo: 'Média', cor: '#eab308' },
+  { chave: 'alta', rotulo: 'Alta', cor: '#f97316' },
+  { chave: 'urgente', rotulo: 'Urgente', cor: '#ef4444' },
 ];
 
 export const CATEGORIAS = [
@@ -55,9 +66,9 @@ export const SYNC = {
   // 'nao_enviado' fica sem selo de proposito: e o estado normal
 };
 
-// devolve o icone de uma lista de dominio a partir da chave
+// devolve o componente de icone de uma lista de dominio a partir da chave
 export const icone = (lista, chave) =>
-  lista.find((i) => i.chave === chave)?.icone ?? '•';
+  lista.find((i) => i.chave === chave)?.Icone ?? Calendar;
 
 // devolve o rotulo de uma lista de dominio a partir da chave
 export const rotulo = (lista, chave) =>
@@ -90,21 +101,3 @@ export const fmtHora = (iso) =>
   iso
     ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     : '';
-
-// ---- Google Agenda --------------------------------------------------------
-
-export const AGENDA_GOOGLE = 'https://calendar.google.com/calendar/r';
-
-// monta o link de criacao rapida de evento; null quando a entrada nao tem data
-export const linkGoogleAgenda = (e) => {
-  if (!e?.inicio) return null;
-  const compacto = (iso) => new Date(iso).toISOString().replace(/[-:]|\.\d{3}/g, '');
-  const fim = e.fim ?? new Date(new Date(e.inicio).getTime() + 3600000).toISOString();
-  const p = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: e.titulo ?? '',
-    dates: `${compacto(e.inicio)}/${compacto(fim)}`,
-    details: e.conteudo ?? '',
-  });
-  return `https://calendar.google.com/calendar/render?${p}`;
-};

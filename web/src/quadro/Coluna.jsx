@@ -22,7 +22,12 @@ export default function Coluna({ coluna, entradas, aoAbrir, aoAgendar }) {
   return (
     <section ref={setNodeRef} className={`coluna${isOver ? ' sobre' : ''}`}>
       <header className="coluna-topo">
-        <span>{coluna.icone} {coluna.rotulo}</span>
+        <span className="coluna-titulo">
+          <span className="icone-badge" style={{ backgroundColor: `${coluna.cor}22`, color: coluna.cor }}>
+            <coluna.Icone size={14} strokeWidth={2.25} aria-hidden="true" />
+          </span>
+          {coluna.rotulo}
+        </span>
         <span className="coluna-contador">{entradas.length}</span>
       </header>
 
