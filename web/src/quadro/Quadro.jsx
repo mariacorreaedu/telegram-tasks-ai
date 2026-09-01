@@ -4,7 +4,7 @@ import { COLUNAS, SO_FILA } from '../dados/constantes';
 import Coluna from './Coluna';
 import ModalAgenda from './ModalAgenda';
 
-export default function Quadro({ entradas, mover, criar, enviarAoGoogle, aoAbrir }) {
+export default function Quadro({ entradas, mover, criar, excluir, enviarAoGoogle, aoAbrir }) {
   // qual entrada está com o modal do Google aberto (null = fechado)
   const [aAgendar, setAAgendar] = useState(null);
 
@@ -37,6 +37,7 @@ export default function Quadro({ entradas, mover, criar, enviarAoGoogle, aoAbrir
             aoAbrir={aoAbrir}
             aoAgendar={setAAgendar}
             criar={criar}
+            excluir={excluir}
           />
         ))}
       </div>

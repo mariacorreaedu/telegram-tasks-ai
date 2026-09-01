@@ -31,6 +31,9 @@ export const PRIORIDADES = [
   { chave: 'urgente', rotulo: 'Urgente', cor: '#ef4444' },
 ];
 
+// ordem de exibicao das colunas do quadro: mais urgente primeiro
+export const ORDEM_PRIORIDADE = ['urgente', 'alta', 'media', 'baixa'];
+
 export const CATEGORIAS = [
   'trabalho',
   'pessoal',

@@ -63,51 +63,51 @@ export default function ModalEdicao({ entrada, aoSalvar, aoConcluir, aoExcluir, 
             <textarea value={form.conteudo} onChange={campo('conteudo')} rows={3} />
           </label>
 
-          <div className="linha">
-            <label>
-              Tipo
-              <select value={form.tipo} onChange={campo('tipo')}>
-                {TIPOS.map((t) => (
-                  <option key={t.chave} value={t.chave}>{t.rotulo}</option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              Coluna
-              <select value={soFila ? 'fila_espera' : form.coluna} onChange={campo('coluna')} disabled={soFila}>
-                {COLUNAS.map((c) => (
-                  <option key={c.chave} value={c.chave}>{c.rotulo}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          {soFila && <p className="dica">Notas ficam sempre na Fila de espera.</p>}
-
-          <div className="linha">
-            <label>
-              Categoria
-              <select value={form.categoria} onChange={campo('categoria')}>
-                {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
-
-            <label>
-              Prioridade
-              <select value={form.prioridade} onChange={campo('prioridade')}>
-                {PRIORIDADES.map((p) => (
-                  <option key={p.chave} value={p.chave}>{p.rotulo}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-
           {!soFila && (
-            <label>
-              Data e hora
-              <input type="datetime-local" value={form.inicio} onChange={campo('inicio')} />
-            </label>
+            <>
+              <div className="linha">
+                <label>
+                  Tipo
+                  <select value={form.tipo} onChange={campo('tipo')}>
+                    {TIPOS.map((t) => (
+                      <option key={t.chave} value={t.chave}>{t.rotulo}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Coluna
+                  <select value={form.coluna} onChange={campo('coluna')}>
+                    {COLUNAS.map((c) => (
+                      <option key={c.chave} value={c.chave}>{c.rotulo}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="linha">
+                <label>
+                  Categoria
+                  <select value={form.categoria} onChange={campo('categoria')}>
+                    {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
+
+                <label>
+                  Prioridade
+                  <select value={form.prioridade} onChange={campo('prioridade')}>
+                    {PRIORIDADES.map((p) => (
+                      <option key={p.chave} value={p.chave}>{p.rotulo}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                Data e hora
+                <input type="datetime-local" value={form.inicio} onChange={campo('inicio')} />
+              </label>
+            </>
           )}
           {form.tipo === 'evento' && !form.inicio && (
             <p className="dica alerta">Evento precisa de data e hora.</p>

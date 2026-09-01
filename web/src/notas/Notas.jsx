@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { Clock, Plus, StickyNote } from 'lucide-react';
+import { Clock, Plus, StickyNote, Trash2 } from 'lucide-react';
 import { CATEGORIA_CORES, TIPOS, fmtData, icone } from '../dados/constantes';
 import ModalNovaNota from './ModalNovaNota';
 
 const COR_NOTAS = '#7c3aed';
 
-export default function Notas({ entradas, aoAbrir, criar }) {
+export default function Notas({ entradas, aoAbrir, criar, excluir }) {
   const [criando, setCriando] = useState(false);
+
+  const remover = (e, entrada) => {
+    e.stopPropagation();
+    if (window.confirm(`Excluir "${entrada.titulo}"?`)) excluir(entrada.id);
+  };
 
   return (
     <section className="notas">
@@ -28,16 +33,22 @@ export default function Notas({ entradas, aoAbrir, criar }) {
           const chip = CATEGORIA_CORES[e.categoria] ?? CATEGORIA_CORES.outros;
           const Icone = icone(TIPOS, e.tipo);
           return (
-            <button
-              key={e.id}
-              type="button"
-              className="card-entrada card-nota"
-              onClick={() => aoAbrir(e)}
-            >
-              <span className="chip" style={{ backgroundColor: chip.bg, color: chip.cor }}>
-                <Icone size={12} strokeWidth={2.25} aria-hidden="true" />
-                {e.categoria ?? 'sem categoria'}
-              </span>
+            <article key={e.id} className="card-entrada card-nota" onClick={() => aoAbrir(e)}>
+              <div className="card-header">
+                <span className="chip" style={{ backgroundColor: chip.bg, color: chip.cor }}>
+                  <Icone size={12} strokeWidth={2.25} aria-hidden="true" />
+                  {e.categoria ?? 'sem categoria'}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm btn-icone btn-perigo"
+                  onClick={(ev) => remover(ev, e)}
+                  title="Excluir"
+                >
+                  <Trash2 size={15} aria-hidden="true" />
+                </button>
+              </div>
+
               <h4 className="card-titulo">{e.titulo}</h4>
               {e.conteudo && <p className="card-conteudo">{e.conteudo}</p>}
               {e.inicio && (
@@ -47,7 +58,7 @@ export default function Notas({ entradas, aoAbrir, criar }) {
                   </span>
                 </div>
               )}
-            </button>
+            </article>
           );
         })}
       </div>

@@ -100,13 +100,14 @@ export default function Painel() {
             entradas={entradasQuadro}
             mover={mover}
             criar={criar}
+            excluir={excluir}
             enviarAoGoogle={enviarAoGoogle}
             aoAbrir={setSelecionada}
           />
         ) : aba === 'calendario' ? (
           <Calendario entradas={entradasQuadro} aoAbrir={setSelecionada} />
         ) : (
-          <Notas entradas={entradasNotas} aoAbrir={setSelecionada} criar={criar} />
+          <Notas entradas={entradasNotas} aoAbrir={setSelecionada} criar={criar} excluir={excluir} />
         )}
       </main>
 

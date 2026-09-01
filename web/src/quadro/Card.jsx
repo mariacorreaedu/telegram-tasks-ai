@@ -1,8 +1,8 @@
 import { useDraggable } from '@dnd-kit/core';
-import { CalendarCheck, CalendarPlus, Clock, Ellipsis } from 'lucide-react';
-import { CATEGORIA_CORES, SYNC, TIPOS, fmtData, icone } from '../dados/constantes';
+import { CalendarCheck, CalendarPlus, Clock, Ellipsis, Trash2 } from 'lucide-react';
+import { CATEGORIA_CORES, PRIORIDADES, SYNC, TIPOS, fmtData, icone } from '../dados/constantes';
 
-export default function Card({ entrada, aoAbrir, aoAgendar }) {
+export default function Card({ entrada, aoAbrir, aoAgendar, excluir }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: entrada.id,
     data: { coluna: entrada.coluna },
@@ -10,12 +10,19 @@ export default function Card({ entrada, aoAbrir, aoAgendar }) {
 
   const Icone = icone(TIPOS, entrada.tipo);
   const chip = CATEGORIA_CORES[entrada.categoria] ?? CATEGORIA_CORES.outros;
+  const prioridade = PRIORIDADES.find((p) => p.chave === entrada.prioridade) ?? PRIORIDADES[1];
   const sincronizado = entrada.google_sync === 'enviado';
+  const atrasado = entrada.tipo === 'evento' && entrada.inicio && new Date(entrada.inicio) < new Date();
   const semArrastar = (e) => e.stopPropagation();
 
   const abrirAgenda = (e) => {
     e.stopPropagation();
     aoAgendar(entrada);
+  };
+
+  const remover = (e) => {
+    e.stopPropagation();
+    if (window.confirm(`Excluir "${entrada.titulo}"?`)) excluir(entrada.id);
   };
 
   return (
@@ -33,26 +40,42 @@ export default function Card({ entrada, aoAbrir, aoAgendar }) {
           <Icone size={12} strokeWidth={2.25} aria-hidden="true" />
           {entrada.categoria ?? 'sem categoria'}
         </span>
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm btn-icone"
-          onPointerDown={semArrastar}
-          onClick={() => aoAbrir(entrada)}
-          title="Abrir"
-        >
-          <Ellipsis size={16} aria-hidden="true" />
-        </button>
+
+        <div className="card-acoes">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm btn-icone"
+            onPointerDown={semArrastar}
+            onClick={() => aoAbrir(entrada)}
+            title="Abrir"
+          >
+            <Ellipsis size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm btn-icone btn-perigo"
+            onPointerDown={semArrastar}
+            onClick={remover}
+            title="Excluir"
+          >
+            <Trash2 size={15} aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       <h4 className="card-titulo">{entrada.titulo}</h4>
 
-      {entrada.inicio && (
-        <div className="card-meta">
-          <span className="meta-data">
+      <div className="card-meta">
+        {entrada.inicio && (
+          <span className={`meta-data${atrasado ? ' atrasado' : ''}`}>
             <Clock size={12} aria-hidden="true" /> {fmtData(entrada.inicio)}
           </span>
-        </div>
-      )}
+        )}
+        <span className="tag-prioridade" style={{ color: prioridade.cor }}>
+          <span className="ponto-prioridade" style={{ backgroundColor: prioridade.cor }} aria-hidden="true" />
+          {prioridade.rotulo}
+        </span>
+      </div>
 
       {entrada.inicio &&
         (sincronizado ? (

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Plus } from 'lucide-react';
+import { ORDEM_PRIORIDADE } from '../dados/constantes';
 import Card from './Card';
 import ModalNovaTarefa from './ModalNovaTarefa';
 
-export default function Coluna({ coluna, entradas, aoAbrir, aoAgendar, criar }) {
+export default function Coluna({ coluna, entradas, aoAbrir, aoAgendar, criar, excluir }) {
   const { setNodeRef, isOver } = useDroppable({ id: coluna.chave });
   const corpoRef = useRef(null);
   const [temMais, setTemMais] = useState(false);
@@ -21,6 +22,11 @@ export default function Coluna({ coluna, entradas, aoAbrir, aoAgendar, criar }) 
     window.addEventListener('resize', verificarScroll);
     return () => window.removeEventListener('resize', verificarScroll);
   }, [entradas]);
+
+  // mais urgente primeiro, pra chamar a atenção antes de rolar a coluna
+  const ordenadas = [...entradas].sort(
+    (a, b) => ORDEM_PRIORIDADE.indexOf(a.prioridade) - ORDEM_PRIORIDADE.indexOf(b.prioridade),
+  );
 
   return (
     <section ref={setNodeRef} className={`coluna${isOver ? ' sobre' : ''}`}>
@@ -41,8 +47,8 @@ export default function Coluna({ coluna, entradas, aoAbrir, aoAgendar, criar }) 
 
       <div className="coluna-corpo" ref={corpoRef} onScroll={verificarScroll}>
         {entradas.length === 0 && <p className="coluna-vazia">Nada aqui.</p>}
-        {entradas.map((e) => (
-          <Card key={e.id} entrada={e} aoAbrir={aoAbrir} aoAgendar={aoAgendar} />
+        {ordenadas.map((e) => (
+          <Card key={e.id} entrada={e} aoAbrir={aoAbrir} aoAgendar={aoAgendar} excluir={excluir} />
         ))}
       </div>
 
