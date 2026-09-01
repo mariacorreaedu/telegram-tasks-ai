@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { useEntradas } from '../dados/useEntradas';
+import { SO_FILA } from '../dados/constantes';
 import Quadro from '../quadro/Quadro';
 import Calendario from '../calendario/Calendario';
+import Notas from '../notas/Notas';
 import ModalEdicao from '../quadro/ModalEdicao';
 import AlternarTema from '../componentes/AlternarTema';
 
@@ -13,6 +15,10 @@ export default function Painel() {
 
   const { entradas, carregando, aviso, setAviso, mover, salvar, concluir, excluir, enviarAoGoogle } =
     useEntradas();
+
+  // notas e ideias saem do quadro: vivem no menu Notas, nao na Fila de espera
+  const entradasNotas = entradas.filter((e) => SO_FILA.includes(e.tipo));
+  const entradasQuadro = entradas.filter((e) => !SO_FILA.includes(e.tipo));
 
   const fecharModal = () => setSelecionada(null);
 
@@ -25,6 +31,9 @@ export default function Painel() {
     await excluir(id);
     fecharModal();
   };
+
+  const vazio =
+    (aba !== 'notas' && entradasQuadro.length === 0) || (aba === 'notas' && entradasNotas.length === 0);
 
   return (
     <div className="painel-container">
@@ -40,13 +49,20 @@ export default function Painel() {
             onClick={() => setAba('quadro')}
           >
             📋 Tarefas
-            <span className="nav-contador">{entradas.length}</span>
+            <span className="nav-contador">{entradasQuadro.length}</span>
           </button>
           <button
             className={`nav-item ${aba === 'calendario' ? 'ativo' : ''}`}
             onClick={() => setAba('calendario')}
           >
             📅 Calendário
+          </button>
+          <button
+            className={`nav-item ${aba === 'notas' ? 'ativo' : ''}`}
+            onClick={() => setAba('notas')}
+          >
+            📝 Notas
+            <span className="nav-contador">{entradasNotas.length}</span>
           </button>
         </nav>
 
@@ -70,7 +86,7 @@ export default function Painel() {
 
         {carregando ? (
           <p className="estado-carregando">Carregando suas entradas…</p>
-        ) : entradas.length === 0 ? (
+        ) : vazio ? (
           <div className="estado-vazio">
             <p className="estado-vazio-titulo">Nada por aqui ainda.</p>
             <p className="estado-vazio-dica">
@@ -78,9 +94,11 @@ export default function Painel() {
             </p>
           </div>
         ) : aba === 'quadro' ? (
-          <Quadro entradas={entradas} mover={mover} enviarAoGoogle={enviarAoGoogle} aoAbrir={setSelecionada} />
+          <Quadro entradas={entradasQuadro} mover={mover} enviarAoGoogle={enviarAoGoogle} aoAbrir={setSelecionada} />
+        ) : aba === 'calendario' ? (
+          <Calendario entradas={entradasQuadro} aoAbrir={setSelecionada} />
         ) : (
-          <Calendario entradas={entradas} aoAbrir={setSelecionada} />
+          <Notas entradas={entradasNotas} aoAbrir={setSelecionada} />
         )}
       </main>
 

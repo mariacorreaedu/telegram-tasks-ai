@@ -33,7 +33,19 @@ export const CATEGORIAS = [
 ];
 
 // tipos que so podem viver na fila de espera (CHECK entries_nota_na_fila)
+// no front, esses tipos saem da coluna Fila de espera do quadro e vao para o menu Notas
 export const SO_FILA = ['nota', 'ideia'];
+
+// cor do chip de categoria no card (fundo + texto)
+export const CATEGORIA_CORES = {
+  trabalho: { bg: '#dbeafe', cor: '#1d4ed8' },
+  pessoal: { bg: '#ede9fe', cor: '#7c3aed' },
+  estudo: { bg: '#fef3c7', cor: '#b45309' },
+  saude: { bg: '#d1fae5', cor: '#047857' },
+  financeiro: { bg: '#fee2e2', cor: '#b91c1c' },
+  casa: { bg: '#ffe4e6', cor: '#be123c' },
+  outros: { bg: '#e5e7eb', cor: '#374151' },
+};
 
 // estados de sincronizacao com o Google (ENUM google_sync_status)
 export const SYNC = {
