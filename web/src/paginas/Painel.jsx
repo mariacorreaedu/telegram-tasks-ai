@@ -1,5 +1,7 @@
+import { useState } from 'react';
+
 export default function Painel({ usuario, sair }) {
-   const [aba, setAba] = useState('quadro'); // quadro | calendario
+   const [aba, setAba] = useState('quadro');
  
    return (
      <div className="painel-container">
@@ -34,11 +36,9 @@ export default function Painel({ usuario, sair }) {
        </aside>
  
        <main className="painel-main">
-         {aba === 'quadro' && <Quadro usuario={usuario} />}
-         {aba === 'calendario' && <Calendario usuario={usuario} />}
+         {aba === 'quadro' && <div>📋 Quadro em desenvolvimento</div>}
+         {aba === 'calendario' && <div>📅 Calendário em desenvolvimento</div>}
        </main>
      </div>
    );
  }
-
- 
