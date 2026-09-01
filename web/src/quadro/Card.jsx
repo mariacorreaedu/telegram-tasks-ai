@@ -1,55 +1,35 @@
 import { useDraggable } from '@dnd-kit/core';
-import { PRIORIDADES, SYNC, TIPOS, fmtData, icone } from '../dados/constantes';
+import { fmtData, icone, linkGoogleAgenda } from '../dados/constantes';
 
-export default function Card({ entrada, aoAbrir, aoAgendar }) {
+export default function Card({ entrada, aoAbrir }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: entrada.id,
     data: { coluna: entrada.coluna },
   });
 
-  const cor = PRIORIDADES.find((p) => p.chave === entrada.prioridade)?.cor ?? '#888';
-  const selo = SYNC[entrada.google_sync];
-
-  // so oferece o botao se ha data e ainda nao foi para o Google
-  const podeAgendar = Boolean(entrada.inicio) && entrada.google_sync !== 'enviado';
-  
-  // impede que o clique no botao vire inicio de arraste
+  const link = linkGoogleAgenda(entrada);
   const semArrastar = (e) => e.stopPropagation();
+
+  const abrirAgenda = (e) => {
+    e.stopPropagation();
+    window.open(link, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <article
       ref={setNodeRef}
-      className={`card${isDragging ? ' arrastando' : ''}`}
+      className={`card card-entrada ${isDragging ? 'arrastando' : ''}`}
       style={{
-        '--cor-prio': cor,
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
       }}
       {...listeners}
       {...attributes}
     >
-      <div className="card-linha">
-        <span className="card-numero">{entrada.numero}</span>
-        <span className="card-tipo">{icone(TIPOS, entrada.tipo)}</span>
-        {entrada.origem === 'audio' && (
-          <span className="card-tipo" title="Capturado por audio">🎙</span>
-        )}
-        <span className="card-espaco" />
-
-        {podeAgendar && (
-          <button
-            type="button"
-            className="card-acao"
-            onPointerDown={semArrastar}
-            onClick={(e) => { e.stopPropagation(); aoAgendar(entrada); }}
-            title="Adicionar ao Google Agenda"
-          >
-            📆
-          </button>
-        )}
-
+      <div className="card-header">
+        <h4 className="card-titulo">{entrada.titulo}</h4>
         <button
           type="button"
-          className="card-acao"
+          className="btn btn-ghost btn-sm"
           onPointerDown={semArrastar}
           onClick={() => aoAbrir(entrada)}
           title="Abrir"
@@ -58,13 +38,22 @@ export default function Card({ entrada, aoAbrir, aoAgendar }) {
         </button>
       </div>
 
-      <p className="card-titulo">{entrada.titulo}</p>
-
-      {(entrada.inicio || selo) && (
-        <div className="card-linha card-meta">
-          {entrada.inicio && <time>{fmtData(entrada.inicio)}</time>}
-          {selo && <span className={`selo ${selo.classe}`}>{selo.rotulo}</span>}
+      {entrada.inicio && (
+        <div className="card-meta">
+          <span className="meta-data">📅 {fmtData(entrada.inicio)}</span>
         </div>
+      )}
+
+      {link && (
+        <button
+          type="button"
+          className="btn btn-sm btn-secondary"
+          onPointerDown={semArrastar}
+          onClick={abrirAgenda}
+          title="Adicionar ao Google Agenda"
+        >
+          Adicionar ao Google
+        </button>
       )}
     </article>
   );
