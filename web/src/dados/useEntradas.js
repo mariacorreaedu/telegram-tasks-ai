@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { SO_FILA } from './constantes';
 import { criarEvento } from './googleAgenda';
+import { SO_FILA } from './constantes';
 
 const CAMPOS =
   'id, numero, tipo, titulo, conteudo, categoria, prioridade, coluna, inicio, fim, origem, google_sync, google_event_id';
@@ -103,31 +104,35 @@ export function useEntradas() {
 
   const enviarAoGoogle = async (entrada, { inicio, fim }) => {
    const evento = await criarEvento({
-     titulo: entrada.titulo,
+     titulo: entrada.tistulo,
      conteudo: entrada.conteudo,
      inicio,
      fim,
    });
 
-   const { data, error } = await supabase
+   const alteracoes = {
+      inicio,
+      fim,
+      google_event_id: evento.id,
+      google_sync: 'enviado',                        // valor real do enum
+      google_sync_em: new Date().toISOString(),
+    };
+
+    // nota e ideia sao obrigadas a ficar na fila (CHECK entries_nota_na_fila)
+    if (!SO_FILA.includes(entrada.tipo)) alteracoes.coluna = 'com_prazo';
+
+    const { data, error } = await supabase
       .from('entries')
-      .update({
-         inicio,
-         fim,
-         google_event_id: evento.id,
-         google_sync: 'sincronizado',
-         coluna: 'com_prazo', // ganhou data confirmada, então muda de coluna
-      })
+      .update(alteracoes)
       .eq('id', entrada.id)
       .select()
       .single();
 
-      if (error) throw new Error(error.message);
+    if (error) throw new Error(error.message);
 
-      setEntradas((l) => l.map((e) => (e.id === data.id ? data : e)));
-      return evento;
-   };
-
+    setEntradas((l) => l.map((e) => (e.id === data.id ? data : e)));
+    return evento;
+  };
 
   return { entradas, carregando, aviso, setAviso, carregar, mover, salvar, concluir, excluir, enviarAoGoogle  };
 }

@@ -37,8 +37,9 @@ export const SO_FILA = ['nota', 'ideia'];
 
 // estados de sincronizacao com o Google (ENUM google_sync_status)
 export const SYNC = {
-  sincronizado: { rotulo: 'no Google', classe: 'selo-ok' },
-  dessincronizado: { rotulo: 'dessincronizado', classe: 'selo-erro' },
+  enviado: { rotulo: 'no Google', classe: 'selo-ok' },
+  dessincronizado: { rotulo: 'dessincronizado', classe: 'selo-alerta' },
+  erro: { rotulo: 'falhou', classe: 'selo-erro' },
   // 'nao_enviado' fica sem selo de proposito: e o estado normal
 };
 

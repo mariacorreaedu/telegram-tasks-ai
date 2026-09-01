@@ -11,8 +11,8 @@ export default function Card({ entrada, aoAbrir, aoAgendar }) {
   const selo = SYNC[entrada.google_sync];
 
   // so oferece o botao se ha data e ainda nao foi para o Google
-  const podeAgendar = Boolean(entrada.inicio) && entrada.google_sync !== 'sincronizado';
-
+  const podeAgendar = Boolean(entrada.inicio) && entrada.google_sync !== 'enviado';
+  
   // impede que o clique no botao vire inicio de arraste
   const semArrastar = (e) => e.stopPropagation();
 
