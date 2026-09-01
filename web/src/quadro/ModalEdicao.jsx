@@ -83,7 +83,7 @@ export default function ModalEdicao({ entrada, aoSalvar, aoConcluir, aoExcluir, 
             </label>
           </div>
 
-          {soFila && <p className="dica">Anotações e ideias ficam sempre na Fila de espera.</p>}
+          {soFila && <p className="dica">Notas ficam sempre na Fila de espera.</p>}
 
           <div className="linha">
             <label>
@@ -103,10 +103,12 @@ export default function ModalEdicao({ entrada, aoSalvar, aoConcluir, aoExcluir, 
             </label>
           </div>
 
-          <label>
-            Data e hora
-            <input type="datetime-local" value={form.inicio} onChange={campo('inicio')} />
-          </label>
+          {!soFila && (
+            <label>
+              Data e hora
+              <input type="datetime-local" value={form.inicio} onChange={campo('inicio')} />
+            </label>
+          )}
           {form.tipo === 'evento' && !form.inicio && (
             <p className="dica alerta">Evento precisa de data e hora.</p>
           )}

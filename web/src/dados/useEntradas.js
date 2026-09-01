@@ -6,7 +6,7 @@ import { criarEvento } from './googleAgenda';
 const CAMPOS =
   'id, numero, tipo, titulo, conteudo, categoria, prioridade, coluna, inicio, fim, origem, google_sync, google_event_id';
 
-export function useEntradas() {
+export function useEntradas(usuarioId) {
   const [entradas, setEntradas] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [aviso, setAviso] = useState(null);
@@ -55,10 +55,26 @@ export function useEntradas() {
 
     // O banco recusaria com CHECK. Avisar antes é mais honesto que deixar falhar.
     if (SO_FILA.includes(alvo.tipo) && novaColuna !== 'fila_espera') {
-      setAviso('Anotações e ideias ficam na Fila de espera. Mude o tipo primeiro.');
+      setAviso('Notas ficam na Fila de espera. Mude o tipo primeiro.');
       return;
     }
     await aplicar(id, { coluna: novaColuna }, 'Não consegui mover. O card voltou.');
+  };
+
+  const criar = async (campos) => {
+    setAviso(null);
+    const { data, error } = await supabase
+      .from('entries')
+      .insert({ ...campos, user_id: usuarioId })
+      .select(CAMPOS)
+      .single();
+
+    if (error) {
+      setAviso('Não consegui criar. Tenta de novo.');
+      return false;
+    }
+    setEntradas((atual) => [...atual, data]);
+    return true;
   };
 
   const salvar = async (id, campos) => {
@@ -117,7 +133,7 @@ export function useEntradas() {
       google_sync_em: new Date().toISOString(),
     };
 
-    // nota e ideia sao obrigadas a ficar na fila (CHECK entries_nota_na_fila)
+    // nota e obrigada a ficar na fila (CHECK entries_nota_na_fila)
     if (!SO_FILA.includes(entrada.tipo)) alteracoes.coluna = 'com_prazo';
 
     const { data, error } = await supabase
@@ -133,5 +149,5 @@ export function useEntradas() {
     return evento;
   };
 
-  return { entradas, carregando, aviso, setAviso, carregar, mover, salvar, concluir, excluir, enviarAoGoogle  };
+  return { entradas, carregando, aviso, setAviso, carregar, mover, salvar, criar, concluir, excluir, enviarAoGoogle };
 }

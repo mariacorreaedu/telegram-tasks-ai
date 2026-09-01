@@ -1,9 +1,13 @@
-import { Clock, StickyNote } from 'lucide-react';
+import { useState } from 'react';
+import { Clock, Plus, StickyNote } from 'lucide-react';
 import { CATEGORIA_CORES, TIPOS, fmtData, icone } from '../dados/constantes';
+import ModalNovaNota from './ModalNovaNota';
 
 const COR_NOTAS = '#7c3aed';
 
-export default function Notas({ entradas, aoAbrir }) {
+export default function Notas({ entradas, aoAbrir, criar }) {
+  const [criando, setCriando] = useState(false);
+
   return (
     <section className="notas">
       <header className="notas-topo">
@@ -15,6 +19,11 @@ export default function Notas({ entradas, aoAbrir }) {
       </header>
 
       <div className="notas-grade">
+        <button type="button" className="card-nova-nota" onClick={() => setCriando(true)}>
+          <Plus size={22} strokeWidth={3} aria-hidden="true" />
+          Nova anotação
+        </button>
+
         {entradas.map((e) => {
           const chip = CATEGORIA_CORES[e.categoria] ?? CATEGORIA_CORES.outros;
           const Icone = icone(TIPOS, e.tipo);
@@ -42,6 +51,8 @@ export default function Notas({ entradas, aoAbrir }) {
           );
         })}
       </div>
+
+      {criando && <ModalNovaNota aoCriar={criar} aoFechar={() => setCriando(false)} />}
     </section>
   );
 }

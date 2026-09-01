@@ -3,7 +3,6 @@ import {
   CalendarClock,
   FileText,
   Inbox,
-  Lightbulb,
   Mail,
   SquareCheck,
   Zap,
@@ -22,8 +21,7 @@ export const COLUNAS = [
 export const TIPOS = [
   { chave: 'tarefa', rotulo: 'Tarefa', Icone: SquareCheck },
   { chave: 'evento', rotulo: 'Evento', Icone: Calendar },
-  { chave: 'nota', rotulo: 'Anotação', Icone: FileText },
-  { chave: 'ideia', rotulo: 'Ideia', Icone: Lightbulb },
+  { chave: 'nota', rotulo: 'Nota', Icone: FileText },
 ];
 
 export const PRIORIDADES = [
@@ -44,7 +42,9 @@ export const CATEGORIAS = [
 ];
 
 // tipos que so podem viver na fila de espera (CHECK entries_nota_na_fila)
-// no front, esses tipos saem da coluna Fila de espera do quadro e vao para o menu Notas
+// no front, esses tipos saem da coluna Fila de espera do quadro e vao para o menu Notas.
+// 'ideia' nao e mais criavel pelo front, mas o enum do Postgres ainda aceita o valor
+// e entradas antigas podem existir — mantido aqui so para nao vazarem de volta pro quadro.
 export const SO_FILA = ['nota', 'ideia'];
 
 // cor do chip de categoria no card (fundo + texto)
@@ -68,7 +68,7 @@ export const SYNC = {
 
 // devolve o componente de icone de uma lista de dominio a partir da chave
 export const icone = (lista, chave) =>
-  lista.find((i) => i.chave === chave)?.Icone ?? Calendar;
+  lista.find((i) => i.chave === chave)?.Icone ?? FileText;
 
 // devolve o rotulo de uma lista de dominio a partir da chave
 export const rotulo = (lista, chave) =>

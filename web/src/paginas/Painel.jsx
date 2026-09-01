@@ -14,10 +14,10 @@ export default function Painel() {
   const [aba, setAba] = useState('quadro');
   const [selecionada, setSelecionada] = useState(null);
 
-  const { entradas, carregando, aviso, setAviso, mover, salvar, concluir, excluir, enviarAoGoogle } =
-    useEntradas();
+  const { entradas, carregando, aviso, setAviso, mover, salvar, criar, concluir, excluir, enviarAoGoogle } =
+    useEntradas(usuario?.id);
 
-  // notas e ideias saem do quadro: vivem no menu Notas, nao na Fila de espera
+  // notas saem do quadro: vivem no menu Notas, nao na Fila de espera
   const entradasNotas = entradas.filter((e) => SO_FILA.includes(e.tipo));
   const entradasQuadro = entradas.filter((e) => !SO_FILA.includes(e.tipo));
 
@@ -32,9 +32,6 @@ export default function Painel() {
     await excluir(id);
     fecharModal();
   };
-
-  const vazio =
-    (aba !== 'notas' && entradasQuadro.length === 0) || (aba === 'notas' && entradasNotas.length === 0);
 
   return (
     <div className="painel-container">
@@ -98,19 +95,18 @@ export default function Painel() {
 
         {carregando ? (
           <p className="estado-carregando">Carregando suas entradas…</p>
-        ) : vazio ? (
-          <div className="estado-vazio">
-            <p className="estado-vazio-titulo">Nada por aqui ainda.</p>
-            <p className="estado-vazio-dica">
-              Manda uma mensagem pro bot no Telegram — texto ou áudio — que ela aparece aqui.
-            </p>
-          </div>
         ) : aba === 'quadro' ? (
-          <Quadro entradas={entradasQuadro} mover={mover} enviarAoGoogle={enviarAoGoogle} aoAbrir={setSelecionada} />
+          <Quadro
+            entradas={entradasQuadro}
+            mover={mover}
+            criar={criar}
+            enviarAoGoogle={enviarAoGoogle}
+            aoAbrir={setSelecionada}
+          />
         ) : aba === 'calendario' ? (
           <Calendario entradas={entradasQuadro} aoAbrir={setSelecionada} />
         ) : (
-          <Notas entradas={entradasNotas} aoAbrir={setSelecionada} />
+          <Notas entradas={entradasNotas} aoAbrir={setSelecionada} criar={criar} />
         )}
       </main>
 
