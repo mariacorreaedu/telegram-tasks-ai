@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { SO_FILA } from './constantes';
 import { criarEvento } from './googleAgenda';
-import { SO_FILA } from './constantes';
 
 const CAMPOS =
   'id, numero, tipo, titulo, conteudo, categoria, prioridade, coluna, inicio, fim, origem, google_sync, google_event_id';
