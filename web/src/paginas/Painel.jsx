@@ -87,7 +87,7 @@ export default function Painel() {
             entradas={entradas}
             mover={mover}
             enviarAoGoogle={enviarAoGoogle}
-            aoAbrir={setEmEdicao}
+            aoAbrir={setAberta}
          />
         )}
         {!carregando && vista === 'calendario' && (

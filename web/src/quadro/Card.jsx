@@ -1,7 +1,7 @@
 import { useDraggable } from '@dnd-kit/core';
-import { PRIORIDADES, SYNC, TIPOS, fmtData, icone, linkGoogleAgenda } from '../dados/constantes';
+import { PRIORIDADES, SYNC, TIPOS, fmtData, icone } from '../dados/constantes';
 
-export default function Card({ entrada, aoAbrir, aoAgendar  }) {
+export default function Card({ entrada, aoAbrir, aoAgendar }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: entrada.id,
     data: { coluna: entrada.coluna },
@@ -9,16 +9,12 @@ export default function Card({ entrada, aoAbrir, aoAgendar  }) {
 
   const cor = PRIORIDADES.find((p) => p.chave === entrada.prioridade)?.cor ?? '#888';
   const selo = SYNC[entrada.google_sync];
-  const link = linkGoogleAgenda(entrada);
+
+  // so oferece o botao se ha data e ainda nao foi para o Google
+  const podeAgendar = Boolean(entrada.inicio) && entrada.google_sync !== 'sincronizado';
 
   // impede que o clique no botao vire inicio de arraste
   const semArrastar = (e) => e.stopPropagation();
-
-  // abre o Google Agenda sem usar tag de ancora
-  const abrirAgenda = (e) => {
-    e.stopPropagation();
-    window.open(link, '_blank', 'noopener,noreferrer');
-  };
 
   return (
     <article
@@ -39,14 +35,14 @@ export default function Card({ entrada, aoAbrir, aoAgendar  }) {
         )}
         <span className="card-espaco" />
 
-        {link && (
+        {podeAgendar && (
           <button
             type="button"
             className="card-acao"
             onPointerDown={semArrastar}
             onClick={(e) => { e.stopPropagation(); aoAgendar(entrada); }}
             title="Adicionar ao Google Agenda"
-         >
+          >
             📆
           </button>
         )}
