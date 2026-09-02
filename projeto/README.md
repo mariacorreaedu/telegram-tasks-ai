@@ -34,3 +34,24 @@ React + vite  = kanban -> Vercel
 Essa separação de Telegram e Web ainda dá suporte caso algum caia, tendo disponivel uma segunda opção caso um caia, web cai, fica disponivel o Telegram, Telelgram cai ainda tem o web disponivel.
 Caso OpenAI caia ainda grava normalmente somente não irá categorizar pois ela não é o motor de gravação, irá apenas salvar como não processada.
 
+
+## O que já está pronto (v1.0)
+
+- Bot no Telegram com comandos determinísticos (`/add`, `/listar`, `/concluir`, `/remover`, `/ajuda`) e menu com botões de acesso rápido.
+- Captura por texto **e áudio** (Whisper).
+- Roteador de IA classificando intenção, categoria, prioridade e data em JSON estruturado.
+- Fallback: IA fora do ar não interrompe a captura.
+- Painel web em React com login **Sign in with Google** via Supabase Auth.
+- Vínculo Telegram ↔ conta Google por código de 6 dígitos (uso único, 10 minutos, hash no banco).
+- Migrations versionadas, RLS habilitado, chaves primárias `bigint identity`.
+- Modelo de dados unificado em `entries` (Single Table Inheritance por `tipo`).
+
+---
+
+## 🚧 Próxima fase — Migrar a regra do n8n para Python (FastAPI) - Em construção
+
+**Esta é a próxima entrega e a mais importante do projeto.**
+
+Hoje a classificação e a validação da saída do LLM vivem em nós Code do n8n. Isso funciona, mas:
+- **Não é testável.** Sem `pytest` de regressão.
+- **Não migra.** Preso à plataforma.

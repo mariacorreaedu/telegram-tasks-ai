@@ -1,5 +1,5 @@
 {
-  "name": "bot-telegram",
+  "name": "workflow-telegram-bot",
   "nodes": [
     {
       "parameters": {
@@ -240,7 +240,9 @@
                   }
                 ]
               }
-            }
+            },
+            {},
+            {}
           ]
         },
         "additionalFields": {
@@ -883,7 +885,31 @@
               "row": {
                 "buttons": [
                   {
-                    "text": "⚙️ Configurações",
+                    "text": "➕ Tarefa",
+                    "additionalFields": {
+                      "callback_data": "add:tarefa"
+                    }
+                  },
+                  {
+                    "text": "➕ Evento",
+                    "additionalFields": {
+                      "callback_data": "add:evento"
+                    }
+                  },
+                  {
+                    "text": "➕ Ideia",
+                    "additionalFields": {
+                      "callback_data": "add:ideia"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Configuração",
                     "additionalFields": {
                       "callback_data": "painel"
                     }
@@ -1621,7 +1647,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -880,
+        -832,
         416
       ],
       "id": "3be949d1-6bc6-4fb9-9376-07d0fab5c182",
@@ -1646,7 +1672,7 @@
                   {
                     "text": "🔗 Abrir painel",
                     "additionalFields": {
-                      "url": "https://SEU-PAINEL.vercel.app"
+                      "url": "https://web-alpha-five-83.vercel.app/"
                     }
                   }
                 ]
@@ -2209,7 +2235,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "43fe120a-8d4e-41e7-bc01-242911408677",
+  "versionId": "fee75464-86d6-4418-8106-70c4e5ab106f",
   "meta": {
     "instanceId": "e039f1f873b7672c729181f0a25795dcab5bb58a75adc526d690b356e9566c0c"
   },
